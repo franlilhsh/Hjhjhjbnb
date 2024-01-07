@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reel Viewer</title>
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "1b5f58d222bc4b65bd8423e89fadd709"}'></script>
+    <style>
+        body {font-family: Arial, sans-serif; text-align: center; background-color: #fafafa;}
+        h1 {color: #262626; margin-bottom: 30px;}
+        input[type="text"], input[type="number"] {width: 80%; padding: 12px 20px; margin: 8px 0; box-sizing: border-box; border: 2px solid #ccc; border-radius: 4px;}
+        button {background-color: #3897f0; border: none; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px;}
+        #reel-container {display: flex; justify-content: center; align-items: center; margin-top: 30px; max-width: 480px; margin-left: auto; margin-right: auto;}
+        .iframe-container {position: relative; width: 100%; height: 0; padding-top: 120%; /* Aspect ratio */}
+        iframe {position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;}
+    </style>
+</head>
+<body>
+    <h1>Reel Viewer</h1>
+    <input type="text" id="reel-url" placeholder="Enter Reel URL..." />
+    <input type="number" id="refresh-interval" placeholder="Refresh Interval (seconds)" />
+    <input type="number" id="parallel-tabs" placeholder="Parallel Tabs" />
+    <button onclick="showReel()">View Reel</button>
+    <button onclick="copyUrlToClipboard()">Copy URL</button>
+    <div id="reel-container"></div>
+
+    <script>
+        function getReelId(url) {
+            const regex = /(?:https:\/\/(www\.)?(instagram\.com|tiktok\.com|youtube\.com|twitch\.tv))?\/((reel(s)?)|p|embed\/videoseries)\/*(?<id>[^\/?]+)\/?/;
+            return regex.exec(url)?.groups["id"] || null;
+        }
+
+        function showReel() {
+            const urlInput = document.getElementById("reel-url");
+            const refreshIntervalInput = document.getElementById("refresh-interval");
+            const parallelTabsInput = document.getElementById("parallel-tabs");
+            const refreshInterval = refreshIntervalInput.value;
+            const parallelTabs = parallelTabsInput.value;
+
+            const url = urlInput.value;
+            const reelId = getReelId(url);
+
+            if (reelId) {
+                let embedUrl;
+                if (url.includes("instagram")) embedUrl = `https://www.instagram.com/p/${reelId}/embed?autoplay=1`;
+                else if (url.includes("tiktok")) embedUrl = `https://www.tiktok.com/p/${reelId}/embed?autoplay=1`;
+                else if (url.includes("youtube")) embedUrl = `https://www.youtube.com/embed/videoseries?list=${reelId}&autoplay=1`;
+                else if (url.includes("twitch")) embedUrl = `https://player.twitch.tv/?video=${reelId}&autoplay=true`;
+                
+                if (refreshInterval && !isNaN(refreshInterval)) {
+                    setTimeout(() => {
+                        showReel();  // Auto refresh without redirect
+                    }, refreshInterval * 1000);
+                }
+
+                if (parallelTabs && !isNaN(parallelTabs)) {
+                    for (let i = 1; i < parallelTabs; i++) {
+                        const newIframe = document.createElement("iframe");
+                        newIframe.src = embedUrl;
+                        newIframe.scrolling = "no";
+                        newIframe.allowtransparency = "true";
+                        document.getElementById("reel-container").appendChild(newIframe);
+                    }
+                }
+
+                document.getElementById("reel-container").innerHTML += `
+                    <div class="iframe-container">
+                        <iframe src="${embedUrl}" scrolling="no" allowtransparency="true"></iframe>
+                    </div>
+                `;
+            }
+        }
+
+        function copyUrlToClipboard() {
+            const tempTextarea = document.createElement("textarea");
+            tempTextarea.value = window.location.href;
+            document.body.appendChild(tempTextarea);
+            tempTextarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempTextarea);
+        }
+
+        document.getElementById("reel-url").addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                showReel();
+            }
+        });
+
+        showReel();  // Initial load
+
+    </script>
+</body>
+</html>

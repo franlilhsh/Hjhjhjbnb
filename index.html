@@ -1,20 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multi Viewer</title>
     <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "1b5f58d222bc4b65bd8423e89fadd709"}'></script>
     <style>
-        body {font-family: Arial, sans-serif; text-align: center; background-color: #fafafa;}
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #fafafa;
+            background-image: url('https://i.giphy.com/gCZ9N4IMDPaoM.webp');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+            margin: 0;
+            padding: 0;
+        }
+
         h1 {color: #262626; margin-bottom: 30px;}
-        input[type="text"], input[type="number"] {width: 80%; padding: 12px 20px; margin: 8px 0; box-sizing: border-box; border: 2px solid #ccc; border-radius: 4px;}
+        input[type="text"],
+        input[type="number"] {width: 80%; padding: 12px 20px; margin: 8px 0; box-sizing: border-box; border: 2px solid #ccc; border-radius: 4px;}
         button {background-color: #3897f0; border: none; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px;}
         #reel-container {display: flex; flex-wrap: wrap; justify-content: center; align-items: center; margin-top: 30px; max-width: 800px; margin-left: auto; margin-right: auto;}
         .iframe-container {position: relative; width: 48%; margin: 1%; padding-top: 60%; /* Aspect ratio */}
         iframe {position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;}
         #preview-container {display: flex; justify-content: center; margin-top: 20px;}
         .preview-iframe {width: 200px; height: 120px; margin: 0 10px; border: 1px solid #ccc;}
+        #error-message {color: #ff0000; margin-top: 10px;}
     </style>
 </head>
 <body>
@@ -26,6 +39,7 @@
     <button onclick="copyUrlToClipboard()">Copy URL</button>
     <div id="preview-container"></div>
     <div id="reel-container"></div>
+    <div id="error-message"></div>
 
     <script>
         const defaultProxy = "http://AHIPnj:qlUvCW1n@66-63-167-138.ip.heroku.ipb.cloud:9080";
@@ -40,6 +54,7 @@
                 proxies = data.split('\r\n').filter(proxy => proxy !== '');
             } catch (error) {
                 console.error('Error fetching proxies:', error);
+                displayErrorMessage('Error fetching proxies. Please try again later.');
             }
         }
 
@@ -60,9 +75,15 @@
             return /bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent);
         }
 
+        function displayErrorMessage(message) {
+            document.getElementById('error-message').textContent = message;
+        }
+
         async function showReel() {
+            document.getElementById('error-message').textContent = '';  // Clear previous error messages
+
             if (isBot()) {
-                alert("Bot detected. Access denied.");
+                displayErrorMessage("Bot detected. Access denied.");
                 return;
             }
 
@@ -86,7 +107,7 @@
                 let embedUrl;
                 if (url.includes("instagram")) embedUrl = `https://www.instagram.com/p/${reelId}/embed?autoplay=1${additionalParameters}`;
                 else if (url.includes("tiktok")) embedUrl = `https://www.tiktok.com/p/${reelId}/embed?autoplay=1${additionalParameters}`;
-                else if (url.includes("youtube")) embedUrl = `https://www.youtube.com/embed/videoseries?list=${reelId}&autoplay=1${additionalParameters}`;
+                else if (url.includes("youtube.com") || url.includes("m.youtube.com") || url.includes("youtu.be")) embedUrl = `https://www.youtube.com/embed/videoseries?list=${reelId}&autoplay=1${additionalParameters}`;
                 else if (url.includes("twitch")) embedUrl = `https://player.twitch.tv/?video=${reelId}&autoplay=true${additionalParameters}`;
                 else if (url.includes("spotify")) embedUrl = `https://open.spotify.com/embed/track/${reelId}?autoplay=1${additionalParameters}`;
                 else if (url.includes("soundcloud")) embedUrl = `https://w.soundcloud.com/player/?url=${url}&amp;auto_play=true${additionalParameters}`;
@@ -128,22 +149,29 @@
                     }
                 }
 
+                // Clear previous preview if any
+                const previewContainer = document.getElementById("preview-container");
+                previewContainer.innerHTML = "";
+
+                // Show previews
+                for (let i = 0; i < parallelTabs; i++) {
+                    const previewIframe = document.createElement("iframe");
+                    previewIframe.src = embedUrl;
+                    previewIframe.classList.add("preview-iframe");
+                    previewContainer.appendChild(previewIframe);
+                }
+
                 document.getElementById("reel-container").innerHTML += `
                     <div class="iframe-container">
                         <iframe src="${embedUrl}" scrolling="no" allowtransparency="true" allow="autoplay" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" loading="lazy" noreferrer="true" noopen="true" noopener="true" seamless="seamless" frameborder="0" autoplay></iframe>
                     </div>
                 `;
 
-                // Preview Section
-                const previewContainer = document.getElementById("preview-container");
-                const previewIframe = document.createElement("iframe");
-                previewIframe.src = embedUrl;
-                previewIframe.classList.add("preview-iframe");
-                previewContainer.appendChild(previewIframe);
-
                 // Create URL with user-entered data
                 const newURL = `${window.location.origin}?url=${encodeURIComponent(url)}&refresh=${refreshInterval}&tabs=${parallelTabs}`;
                 copyUrlToClipboard(newURL);
+            } else {
+                displayErrorMessage("Invalid URL. Please enter a valid Reel URL.");
             }
         }
 
@@ -177,7 +205,6 @@
         } else {
             showReel();  // Initial load
         }
-
     </script>
 </body>
 </html>

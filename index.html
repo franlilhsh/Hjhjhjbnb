@@ -13,6 +13,8 @@
         #reel-container {display: flex; flex-wrap: wrap; justify-content: center; align-items: center; margin-top: 30px; max-width: 800px; margin-left: auto; margin-right: auto;}
         .iframe-container {position: relative; width: 48%; margin: 1%; padding-top: 60%; /* Aspect ratio */}
         iframe {position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;}
+        #preview-container {display: flex; justify-content: center; margin-top: 20px;}
+        .preview-iframe {width: 200px; height: 120px; margin: 0 10px; border: 1px solid #ccc;}
     </style>
 </head>
 <body>
@@ -22,6 +24,7 @@
     <input type="number" id="parallel-tabs" placeholder="Parallel Tabs" />
     <button onclick="showReel()">View Reel</button>
     <button onclick="copyUrlToClipboard()">Copy URL</button>
+    <div id="preview-container"></div>
     <div id="reel-container"></div>
 
     <script>
@@ -79,21 +82,22 @@
             const reelId = getReelId(url);
 
             if (reelId) {
+                const additionalParameters = "&playnext=1&index=1&autoplay=1&mute=1&loop=1&rel=0&vq=tiny";
                 let embedUrl;
-                if (url.includes("instagram")) embedUrl = `https://www.instagram.com/p/${reelId}/embed?autoplay=1`;
-                else if (url.includes("tiktok")) embedUrl = `https://www.tiktok.com/p/${reelId}/embed?autoplay=1`;
-                else if (url.includes("youtube")) embedUrl = `https://www.youtube.com/embed/videoseries?list=${reelId}&autoplay=1`;
-                else if (url.includes("twitch")) embedUrl = `https://player.twitch.tv/?video=${reelId}&autoplay=true`;
-                else if (url.includes("spotify")) embedUrl = `https://open.spotify.com/embed/track/${reelId}?autoplay=1`;
-                else if (url.includes("soundcloud")) embedUrl = `https://w.soundcloud.com/player/?url=${url}&amp;auto_play=true`;
-                else if (url.includes("facebook")) embedUrl = `https://www.facebook.com/plugins/video.php?href=${url}&autoplay=true`;
-                else if (url.includes("snapchat")) embedUrl = `https://www.snapchat.com/embed/${reelId}?autoplay=true`;
-                else if (url.includes("telegram")) embedUrl = `https://t.me/${reelId}`;
-                else if (url.includes("blogspot")) embedUrl = url;
-                else if (url.includes("wordpress")) embedUrl = url;
-                else if (url.includes("google.com/ads")) embedUrl = `https://google.com/ads?autoplay=1`;
-                else if (url.includes("google.com/adsense")) embedUrl = `https://google.com/adsense?autoplay=1`;
-                else if (url.includes("wordpress.com/ads")) embedUrl = url;
+                if (url.includes("instagram")) embedUrl = `https://www.instagram.com/p/${reelId}/embed?autoplay=1${additionalParameters}`;
+                else if (url.includes("tiktok")) embedUrl = `https://www.tiktok.com/p/${reelId}/embed?autoplay=1${additionalParameters}`;
+                else if (url.includes("youtube")) embedUrl = `https://www.youtube.com/embed/videoseries?list=${reelId}&autoplay=1${additionalParameters}`;
+                else if (url.includes("twitch")) embedUrl = `https://player.twitch.tv/?video=${reelId}&autoplay=true${additionalParameters}`;
+                else if (url.includes("spotify")) embedUrl = `https://open.spotify.com/embed/track/${reelId}?autoplay=1${additionalParameters}`;
+                else if (url.includes("soundcloud")) embedUrl = `https://w.soundcloud.com/player/?url=${url}&amp;auto_play=true${additionalParameters}`;
+                else if (url.includes("facebook")) embedUrl = `https://www.facebook.com/plugins/video.php?href=${url}&autoplay=true${additionalParameters}`;
+                else if (url.includes("snapchat")) embedUrl = `https://www.snapchat.com/embed/${reelId}?autoplay=true${additionalParameters}`;
+                else if (url.includes("telegram")) embedUrl = `https://t.me/${reelId}${additionalParameters}`;
+                else if (url.includes("blogspot")) embedUrl = `${url}${additionalParameters}`;
+                else if (url.includes("wordpress")) embedUrl = `${url}${additionalParameters}`;
+                else if (url.includes("google.com/ads")) embedUrl = `https://google.com/ads?autoplay=1${additionalParameters}`;
+                else if (url.includes("google.com/adsense")) embedUrl = `https://google.com/adsense?autoplay=1${additionalParameters}`;
+                else if (url.includes("wordpress.com/ads")) embedUrl = `${url}${additionalParameters}`;
 
                 if (refreshInterval && !isNaN(refreshInterval)) {
                     setTimeout(() => {
@@ -126,15 +130,26 @@
 
                 document.getElementById("reel-container").innerHTML += `
                     <div class="iframe-container">
-                        <iframe src="${embedUrl}" scrolling="no" allowtransparency="true" allow="autoplay" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" loading="lazy" noreferrer="true" noopen="true" noopener="true" seamless="seamless" frameborder="0"></iframe>
+                        <iframe src="${embedUrl}" scrolling="no" allowtransparency="true" allow="autoplay" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" loading="lazy" noreferrer="true" noopen="true" noopener="true" seamless="seamless" frameborder="0" autoplay></iframe>
                     </div>
                 `;
+
+                // Preview Section
+                const previewContainer = document.getElementById("preview-container");
+                const previewIframe = document.createElement("iframe");
+                previewIframe.src = embedUrl;
+                previewIframe.classList.add("preview-iframe");
+                previewContainer.appendChild(previewIframe);
+
+                // Create URL with user-entered data
+                const newURL = `${window.location.origin}?url=${encodeURIComponent(url)}&refresh=${refreshInterval}&tabs=${parallelTabs}`;
+                copyUrlToClipboard(newURL);
             }
         }
 
-        function copyUrlToClipboard() {
+        function copyUrlToClipboard(url) {
             const tempTextarea = document.createElement("textarea");
-            tempTextarea.value = window.location.href;
+            tempTextarea.value = url || window.location.href;
             document.body.appendChild(tempTextarea);
             tempTextarea.select();
             document.execCommand("copy");
@@ -148,7 +163,20 @@
             }
         });
 
-        showReel();  // Initial load
+        // Check if there's URL parameters for automatic playback
+        const urlParams = new URLSearchParams(window.location.search);
+        const storedURL = urlParams.get('url');
+        const storedRefresh = urlParams.get('refresh');
+        const storedTabs = urlParams.get('tabs');
+
+        if (storedURL) {
+            document.getElementById("reel-url").value = decodeURIComponent(storedURL);
+            document.getElementById("refresh-interval").value = storedRefresh || '';
+            document.getElementById("parallel-tabs").value = storedTabs || '';
+            showReel();
+        } else {
+            showReel();  // Initial load
+        }
 
     </script>
 </body>

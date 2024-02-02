@@ -153,12 +153,15 @@
                 const previewContainer = document.getElementById("preview-container");
                 previewContainer.innerHTML = "";
 
-                // Show previews
-                for (let i = 0; i < parallelTabs; i++) {
-                    const previewIframe = document.createElement("iframe");
-                    previewIframe.src = embedUrl;
-                    previewIframe.classList.add("preview-iframe");
-                    previewContainer.appendChild(previewIframe);
+                // Show previews only if buttons are clicked
+                if (refreshInterval || parallelTabs) {
+                    // Show previews
+                    for (let i = 0; i < parallelTabs; i++) {
+                        const previewIframe = document.createElement("iframe");
+                        previewIframe.src = embedUrl;
+                        previewIframe.classList.add("preview-iframe");
+                        previewContainer.appendChild(previewIframe);
+                    }
                 }
 
                 document.getElementById("reel-container").innerHTML += `

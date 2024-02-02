@@ -63,7 +63,8 @@
 
         #preview-container {
             display: flex;
-            justify-content: center;
+            justify-content: space-around;
+            flex-wrap: wrap;
             margin-top: 20px;
         }
 
@@ -217,7 +218,7 @@
                         newIframe.setAttribute('noopener', 'true');
                         newIframe.setAttribute('seamless', 'seamless');
                         newIframe.setAttribute('frameborder', '0');
-                        document.getElementById("reel-container").appendChild(newIframe);
+                        document.getElementById("preview-container").appendChild(newIframe);
                     }
                 }
 

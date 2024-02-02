@@ -181,17 +181,7 @@
                 if (url.includes("instagram")) embedUrl = `https://www.instagram.com/p/${reelId}/embed?autoplay=1${additionalParameters}`;
                 else if (url.includes("tiktok")) embedUrl = `https://www.tiktok.com/p/${reelId}/embed?autoplay=1${additionalParameters}`;
                 else if (url.includes("youtube.com") || url.includes("m.youtube.com") || url.includes("youtu.be")) embedUrl = `https://www.youtube.com/embed/videoseries?list=${reelId}&autoplay=1${additionalParameters}`;
-                else if (url.includes("twitch")) embedUrl = `https://player.twitch.tv/?video=${reelId}&autoplay=true${additionalParameters}`;
-                else if (url.includes("spotify")) embedUrl = `https://open.spotify.com/embed/track/${reelId}?autoplay=1${additionalParameters}`;
-                else if (url.includes("soundcloud")) embedUrl = `https://w.soundcloud.com/player/?url=${url}&amp;auto_play=true${additionalParameters}`;
-                else if (url.includes("facebook")) embedUrl = `https://www.facebook.com/plugins/video.php?href=${url}&autoplay=true${additionalParameters}`;
-                else if (url.includes("snapchat")) embedUrl = `https://www.snapchat.com/embed/${reelId}?autoplay=true${additionalParameters}`;
-                else if (url.includes("telegram")) embedUrl = `https://t.me/${reelId}${additionalParameters}`;
-                else if (url.includes("blogspot")) embedUrl = `${url}${additionalParameters}`;
-                else if (url.includes("wordpress")) embedUrl = `${url}${additionalParameters}`;
-                else if (url.includes("google.com/ads")) embedUrl = `https://google.com/ads?autoplay=1${additionalParameters}`;
-                else if (url.includes("google.com/adsense")) embedUrl = `https://google.com/adsense?autoplay=1${additionalParameters}`;
-                else if (url.includes("wordpress.com/ads")) embedUrl = `${url}${additionalParameters}`;
+                // Add conditions for other platforms...
 
                 if (refreshInterval && !isNaN(refreshInterval)) {
                     setTimeout(() => {
